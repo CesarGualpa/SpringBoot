@@ -1,7 +1,9 @@
-
 package com.krakedev.clientes;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -12,265 +14,242 @@ import com.krakedev.clientes.services.ServicioCliente;
 
 public class ServicioClienteTest {
 
-    // PRUEBAS DEL METODO CREAR
+	// PRUEBAS DEL METODO CREAR
 
-    @Test
-    public void crearClienteNuevoTest() {
+	@Test
+	public void crearClienteNuevoTest() {
+		// Verificar que se puede crear un cliente nuevo con email.
 
-        // Verificar que se puede crear un cliente nuevo.
+		ServicioCliente servicio = new ServicioCliente();
 
-        ServicioCliente servicio = new ServicioCliente();
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-        Cliente cliente = new Cliente(
-                "1234567890", "Juan", "Perez");
+		Cliente resultado = servicio.crear(cliente);
 
-        Cliente resultado = servicio.crear(cliente);
+		assertEquals(cliente, resultado);
+		assertEquals(1, servicio.listar().size());
+		assertEquals("juan@email.com", resultado.getEmail());
+	}
 
-        assertEquals(cliente, resultado);
-        assertEquals(1, servicio.listar().size());
-    }
+	@Test
+	public void crearClienteDuplicadoTest() {
+		// Verificar que no se puede crear un cliente cuando ya existe otro con la misma cedula.
 
-    @Test
-    public void crearClienteDuplicadoTest() {
+		ServicioCliente servicio = new ServicioCliente();
 
-        // Verificar que no se puede crear un cliente
-        // cuando ya existe otro con la misma cedula.
+		Cliente cliente1 = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
+		Cliente cliente2 = new Cliente("1234567890", "Pedro", "Gomez", "pedro@email.com");
 
-        ServicioCliente servicio = new ServicioCliente();
+		servicio.crear(cliente1);
 
-        Cliente cliente1 = new Cliente(
-                "1234567890", "Juan", "Perez");
+		Cliente resultado = servicio.crear(cliente2);
 
-        Cliente cliente2 = new Cliente(
-                "1234567890", "Pedro", "Gomez");
+		assertNull(resultado);
+		assertEquals(1, servicio.listar().size());
+		assertEquals("juan@email.com", servicio.buscarPorCedula("1234567890").getEmail());
+	}
 
-        servicio.crear(cliente1);
+	// PRUEBAS DEL METODO BUSCAR POR CEDULA
 
-        Cliente resultado = servicio.crear(cliente2);
+	@Test
+	public void buscarPorCedulaExistenteTest() {
+		// Verificar que se encuentra un cliente registrado y que conserva su email.
 
-        assertNull(resultado);
-        assertEquals(1, servicio.listar().size());
-    }
+		ServicioCliente servicio = new ServicioCliente();
 
-    // PRUEBAS DEL METODO BUSCAR POR CEDULA
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-    @Test
-    public void buscarPorCedulaExistenteTest() {
+		servicio.crear(cliente);
 
-        // Verificar que se encuentra un cliente
-        // cuando su cedula esta registrada.
+		Cliente resultado = servicio.buscarPorCedula("1234567890");
 
-        ServicioCliente servicio = new ServicioCliente();
+		assertEquals(cliente, resultado);
+		assertEquals("Juan", resultado.getNombre());
+		assertEquals("juan@email.com", resultado.getEmail());
+	}
 
-        Cliente cliente = new Cliente(
-                "1234567890", "Juan", "Perez");
+	@Test
+	public void buscarPorCedulaInexistenteTest() {
+		// Verificar que se retorna null cuando no existe un cliente con la cedula indicada.
 
-        servicio.crear(cliente);
+		ServicioCliente servicio = new ServicioCliente();
 
-        Cliente resultado = servicio.buscarPorCedula(
-                "1234567890");
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-        assertEquals(cliente, resultado);
-        assertEquals("Juan", resultado.getNombre());
-    }
+		servicio.crear(cliente);
 
-    @Test
-    public void buscarPorCedulaInexistenteTest() {
+		Cliente resultado = servicio.buscarPorCedula("9999999999");
 
-        // Verificar que se retorna null cuando
-        // no existe un cliente con la cedula indicada.
+		assertNull(resultado);
+	}
 
-        ServicioCliente servicio = new ServicioCliente();
+	// PRUEBAS DEL METODO LISTAR
 
-        Cliente cliente = new Cliente(
-                "1234567890", "Juan", "Perez");
+	@Test
+	public void listarClientesTest() {
+		// Verificar que se muestran todos los clientes registrados con su email.
 
-        servicio.crear(cliente);
+		ServicioCliente servicio = new ServicioCliente();
 
-        Cliente resultado = servicio.buscarPorCedula(
-                "9999999999");
+		Cliente cliente1 = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
+		Cliente cliente2 = new Cliente("0987654321", "Maria", "Lopez", "maria@email.com");
 
-        assertNull(resultado);
-    }
+		servicio.crear(cliente1);
+		servicio.crear(cliente2);
 
-    // PRUEBAS DEL METODO LISTAR
+		List<Cliente> resultado = servicio.listar();
 
-    @Test
-    public void listarClientesTest() {
+		assertEquals(2, resultado.size());
 
-        // Verificar que se muestran todos los
-        // clientes registrados.
+		assertTrue(resultado.contains(cliente1));
+		assertTrue(resultado.contains(cliente2));
 
-        ServicioCliente servicio = new ServicioCliente();
+		assertEquals("juan@email.com", resultado.get(0).getEmail());
+		assertEquals("maria@email.com", resultado.get(1).getEmail());
+	}
 
-        Cliente cliente1 = new Cliente(
-                "1234567890", "Juan", "Perez");
+	@Test
+	public void listarClientesVacioTest() {
+		// Verificar que la lista esta vacia cuando no se han registrado clientes.
 
-        Cliente cliente2 = new Cliente(
-                "0987654321", "Maria", "Lopez");
+		ServicioCliente servicio = new ServicioCliente();
 
-        servicio.crear(cliente1);
-        servicio.crear(cliente2);
+		List<Cliente> resultado = servicio.listar();
 
-        List<Cliente> resultado = servicio.listar();
+		assertTrue(resultado.isEmpty());
+		assertEquals(0, resultado.size());
+	}
 
-        assertEquals(2, resultado.size());
+	// PRUEBAS DEL METODO ACTUALIZAR
 
-        assertTrue(resultado.contains(cliente1));
-        assertTrue(resultado.contains(cliente2));
-    }
+	@Test
+	public void actualizarClienteExistenteTest() {
+		// Verificar que se actualizan nombre, apellido y email de un cliente existente.
 
-    @Test
-    public void listarClientesVacioTest() {
+		ServicioCliente servicio = new ServicioCliente();
 
-        // Verificar que la lista esta vacia
-        // cuando no se han registrado clientes.
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-        ServicioCliente servicio = new ServicioCliente();
+		servicio.crear(cliente);
 
-        List<Cliente> resultado = servicio.listar();
+		Cliente clienteActualizado = new Cliente("1234567890", "Carlos", "Gomez", "carlos@email.com");
 
-        assertTrue(resultado.isEmpty());
-        assertEquals(0, resultado.size());
-    }
+		Cliente resultado = servicio.actualizar("1234567890", clienteActualizado);
 
-    // PRUEBAS DEL METODO ACTUALIZAR
+		assertEquals("Carlos", resultado.getNombre());
+		assertEquals("Gomez", resultado.getApellido());
+		assertEquals("1234567890", resultado.getCedula());
+		assertEquals("carlos@email.com", resultado.getEmail());
+	}
 
-    @Test
-    public void actualizarClienteExistenteTest() {
+	@Test
+	public void actualizarClienteInexistenteTest() {
+		// Verificar que se retorna null cuando se intenta actualizar un cliente inexistente.
 
-        // Verificar que se actualizan correctamente
-        // el nombre y apellido de un cliente existente.
+		ServicioCliente servicio = new ServicioCliente();
 
-        ServicioCliente servicio = new ServicioCliente();
+		Cliente clienteActualizado = new Cliente("9999999999", "Carlos", "Gomez", "carlos@email.com");
 
-        Cliente cliente = new Cliente(
-                "1234567890", "Juan", "Perez");
+		Cliente resultado = servicio.actualizar("9999999999", clienteActualizado);
 
-        servicio.crear(cliente);
+		assertNull(resultado);
+		assertEquals(0, servicio.listar().size());
+	}
 
-        Cliente clienteActualizado = new Cliente(
-                "1234567890", "Carlos", "Gomez");
+	@Test
+	public void actualizarClienteConservarCedulaTest() {
+		// Verificar que la cedula original no cambia aunque el objeto actualizado tenga otra cedula.
 
-        Cliente resultado = servicio.actualizar(
-                "1234567890", clienteActualizado);
+		ServicioCliente servicio = new ServicioCliente();
 
-        assertEquals("Carlos", resultado.getNombre());
-        assertEquals("Gomez", resultado.getApellido());
-        assertEquals("1234567890", resultado.getCedula());
-    }
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-    @Test
-    public void actualizarClienteInexistenteTest() {
+		servicio.crear(cliente);
 
-        // Verificar que se retorna null cuando
-        // se intenta actualizar un cliente inexistente.
+		Cliente clienteActualizado = new Cliente("9999999999", "Carlos", "Gomez", "carlos@email.com");
 
-        ServicioCliente servicio = new ServicioCliente();
+		Cliente resultado = servicio.actualizar("1234567890", clienteActualizado);
 
-        Cliente clienteActualizado = new Cliente(
-                "9999999999", "Carlos", "Gomez");
+		assertEquals("1234567890", resultado.getCedula());
+		assertEquals("Carlos", resultado.getNombre());
+		assertEquals("Gomez", resultado.getApellido());
+		assertEquals("carlos@email.com", resultado.getEmail());
+	}
 
-        Cliente resultado = servicio.actualizar(
-                "9999999999", clienteActualizado);
+	@Test
+	public void actualizarClienteEmailTest() {
+		// Verificar especificamente que el email se actualiza correctamente.
 
-        assertNull(resultado);
-        assertEquals(0, servicio.listar().size());
-    }
+		ServicioCliente servicio = new ServicioCliente();
 
-    @Test
-    public void actualizarClienteConservarCedulaTest() {
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-        // Verificar que la cedula original no cambia
-        // aunque el objeto actualizado tenga otra cedula.
+		servicio.crear(cliente);
 
-        ServicioCliente servicio = new ServicioCliente();
+		Cliente clienteActualizado = new Cliente("1234567890", "Juan", "Perez", "nuevo@email.com");
 
-        Cliente cliente = new Cliente(
-                "1234567890", "Juan", "Perez");
+		Cliente resultado = servicio.actualizar("1234567890", clienteActualizado);
 
-        servicio.crear(cliente);
+		assertEquals("nuevo@email.com", resultado.getEmail());
+	}
 
-        Cliente clienteActualizado = new Cliente(
-                "9999999999", "Carlos", "Gomez");
+	// PRUEBAS DEL METODO ELIMINAR
 
-        Cliente resultado = servicio.actualizar(
-                "1234567890", clienteActualizado);
+	@Test
+	public void eliminarClienteExistenteTest() {
+		// Verificar que se elimina correctamente un cliente que se encuentra registrado.
 
-        assertEquals("1234567890", resultado.getCedula());
-        assertEquals("Carlos", resultado.getNombre());
-        assertEquals("Gomez", resultado.getApellido());
-    }
+		ServicioCliente servicio = new ServicioCliente();
 
-    // PRUEBAS DEL METODO ELIMINAR
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-    @Test
-    public void eliminarClienteExistenteTest() {
+		servicio.crear(cliente);
 
-        // Verificar que se elimina correctamente
-        // un cliente que se encuentra registrado.
+		boolean resultado = servicio.eliminar("1234567890");
 
-        ServicioCliente servicio = new ServicioCliente();
+		assertTrue(resultado);
+		assertEquals(0, servicio.listar().size());
+		assertNull(servicio.buscarPorCedula("1234567890"));
+	}
 
-        Cliente cliente = new Cliente(
-                "1234567890", "Juan", "Perez");
+	@Test
+	public void eliminarClienteInexistenteTest() {
+		// Verificar que se retorna false cuando se intenta eliminar un cliente inexistente.
 
-        servicio.crear(cliente);
+		ServicioCliente servicio = new ServicioCliente();
 
-        boolean resultado = servicio.eliminar(
-                "1234567890");
+		Cliente cliente = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
 
-        assertTrue(resultado);
-        assertEquals(0, servicio.listar().size());
-        assertNull(servicio.buscarPorCedula("1234567890"));
-    }
+		servicio.crear(cliente);
 
-    @Test
-    public void eliminarClienteInexistenteTest() {
+		boolean resultado = servicio.eliminar("9999999999");
 
-        // Verificar que se retorna false cuando
-        // se intenta eliminar un cliente inexistente.
+		assertFalse(resultado);
+		assertEquals(1, servicio.listar().size());
+	}
 
-        ServicioCliente servicio = new ServicioCliente();
+	@Test
+	public void eliminarClienteConservarOtrosClientesTest() {
+		// Verificar que al eliminar un cliente, los demas clientes permanecen registrados con su email.
 
-        Cliente cliente = new Cliente(
-                "1234567890", "Juan", "Perez");
+		ServicioCliente servicio = new ServicioCliente();
 
-        servicio.crear(cliente);
+		Cliente cliente1 = new Cliente("1234567890", "Juan", "Perez", "juan@email.com");
+		Cliente cliente2 = new Cliente("0987654321", "Maria", "Lopez", "maria@email.com");
 
-        boolean resultado = servicio.eliminar(
-                "9999999999");
+		servicio.crear(cliente1);
+		servicio.crear(cliente2);
 
-        assertFalse(resultado);
-        assertEquals(1, servicio.listar().size());
-    }
+		boolean resultado = servicio.eliminar("1234567890");
 
-    @Test
-    public void eliminarClienteConservarOtrosClientesTest() {
+		assertTrue(resultado);
+		assertEquals(1, servicio.listar().size());
 
-        // Verificar que al eliminar un cliente
-        // los demas clientes permanecen registrados.
+		assertNull(servicio.buscarPorCedula("1234567890"));
 
-        ServicioCliente servicio = new ServicioCliente();
+		Cliente clienteRestante = servicio.buscarPorCedula("0987654321");
 
-        Cliente cliente1 = new Cliente(
-                "1234567890", "Juan", "Perez");
-
-        Cliente cliente2 = new Cliente(
-                "0987654321", "Maria", "Lopez");
-
-        servicio.crear(cliente1);
-        servicio.crear(cliente2);
-
-        boolean resultado = servicio.eliminar(
-                "1234567890");
-
-        assertTrue(resultado);
-        assertEquals(1, servicio.listar().size());
-
-        assertNull(servicio.buscarPorCedula("1234567890"));
-
-        assertEquals(cliente2,
-                servicio.buscarPorCedula("0987654321"));
-    }
+		assertEquals(cliente2, clienteRestante);
+		assertEquals("maria@email.com", clienteRestante.getEmail());
+	}
 }
