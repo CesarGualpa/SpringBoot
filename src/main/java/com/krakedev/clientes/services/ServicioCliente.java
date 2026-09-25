@@ -9,42 +9,52 @@ import com.krakedev.clientes.entidades.Cliente;
 
 @Service
 public class ServicioCliente {
+
 	private ArrayList<Cliente> clientes = new ArrayList<Cliente>();
-	
-	public Cliente buscarPorCedula(String Cedula) {
-		for(Cliente c: clientes) {
-			if(c.getCedula().equals(Cedula)) {
+
+	public Cliente buscarPorCedula(String cedula) {
+		for (Cliente c : clientes) {
+			if (c.getCedula().equals(cedula)) {
 				return c;
 			}
 		}
 		return null;
 	}
+
 	public Cliente crear(Cliente cliente) {
 		Cliente existente = buscarPorCedula(cliente.getCedula());
-		if(existente != null) {
+
+		if (existente != null) {
 			return null;
-		}else {
+		} else {
 			clientes.add(cliente);
 			return cliente;
 		}
 	}
-	public List<Cliente> listar(){
+
+	public List<Cliente> listar() {
 		return clientes;
 	}
+
 	public Cliente actualizar(String cedula, Cliente clienteActualizado) {
 		Cliente cliente = buscarPorCedula(cedula);
-		if(cliente != null) {
+
+		if (cliente != null) {
 			cliente.setNombre(clienteActualizado.getNombre());
 			cliente.setApellido(clienteActualizado.getApellido());
+			cliente.setEmail(clienteActualizado.getEmail());
 		}
+
 		return cliente;
 	}
+
 	public boolean eliminar(String cedula) {
 		Cliente cliente = buscarPorCedula(cedula);
+
 		if (cliente != null) {
 			clientes.remove(cliente);
 			return true;
-		}else {
+		} else {
 			return false;
 		}
 	}
